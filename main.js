@@ -1,5 +1,5 @@
 // Função para construir a página
-function buildPage() {
+function buildPage(myCurrentCountry) {
   const root = document.getElementById('root'); // Obtém a raiz do documento
 
   const myHeader = document.createElement('header'); // Cria um elemento header
@@ -26,7 +26,7 @@ function buildPage() {
   myInput.addEventListener('keypress', function(event) {
     if (event.key === 'Enter') {
       event.preventDefault(); // Evita o comportamento padrão do Enter
-      guessFlag('all', 0, capitals.length); // Chama a função guessFlag ao pressionar Enter
+      guessFlag(myCurrentCountry); // Chama a função guessFlag ao pressionar Enter
     }
   });
 
@@ -47,8 +47,8 @@ function buildPage() {
 }
 
 // Função assíncrona para obter todas as capitais
-async function getAllCapitals(whatIWant) {
-  const url = `https://restcountries.com/v3.1/${whatIWant}`; // URL da API
+async function getAllCapitals() {
+  const url = 'https://restcountries.com/v3.1/subregion/south america'; // URL da API
   const response = await fetch(url); // Faz uma requisição à API
   const data = await response.json(); // Converte a resposta para JSON
 
@@ -67,9 +67,9 @@ function getRandomNumber(min, max) {
 }
 
 // Função assíncrona para obter o país por sua capital
-async function getCountryByCapital(countries, min, max) {
-  const myCapitalsArray = await getAllCapitals(countries); // Obtém todas as capitais
-  const myRandomNumber = getRandomNumber(min, max); // Gera um número aleatório
+async function getCountryByCapital(capitals) {
+  const myCapitalsArray = await getAllCapitals(); // Obtém todas as capitais
+  const myRandomNumber = getRandomNumber(0, capitals.length); // Gera um número aleatório
 
   // URL para obter o país por sua capital
   const url = `https://restcountries.com/v3.1/capital/${myCapitalsArray[myRandomNumber]}`;
@@ -84,16 +84,16 @@ async function getCountryByCapital(countries, min, max) {
 }
 
 // Função assíncrona para mostrar a bandeira de um país na página
-async function front(countries, min, max) {
-  const myCurrentCountry = await getCountryByCapital(countries, min, max); // Obtém o país
+async function front(myCurrentCountry) {
+  // const myCurrentCountry = await getCountryByCapital(capitals); // Obtém o país
   const myImage = document.getElementById('myFlag'); // Obtém a imagem
   myImage.setAttribute('src', myCurrentCountry[0].flags.png); // Define a fonte da imagem
 }
 
 // Função assíncrona para adivinhar a capital de um país
-async function guessFlag(countries, min, max) {
-  const myCurrentCountry = await getCountryByCapital(countries, min, max); // Obtém o país atual
-  const myCapital = myCurrentCountry[0].capital; // Obtém a capital do país
+async function guessFlag(myCurrentCountry) {
+  // const myCurrentCountry = await getCountryByCapital(countries, min, max); // Obtém o país atual
+  const myCapital = myCurrentCountry[0].capital[0]; // Obtém a capital do país
 
   const myInput = document.getElementById('myInner'); // Obtém o input
 
@@ -129,17 +129,21 @@ function updateScoreAndProgress(isCorrect) {
 }
 
 // Função assíncrona para mostrar a próxima bandeira
-async function nextFlag(countries, min, max) {
-  const myCurrentCountry = await getCountryByCapital(countries, min, max); // Obtém o país atual
+async function nextFlag(myCurrentCountry) {
+  // const myCurrentCountry = await getCountryByCapital(countries, min, max); // Obtém o país atual
   const myImage = document.getElementById('myFlag'); // Obtém a imagem
   myImage.setAttribute('src', myCurrentCountry[0].flags.png); // Define a fonte da imagem
 }
 
 // Função principal assíncrona para executar a página
 async function runPage() {
-  buildPage(); // Constrói a página
   const capitals = await getAllCapitals('all'); // Obtém todas as capitais
-  await front('all', 0, capitals.length); // Mostra a primeira bandeira
+  const myCurrentCountry = await getCountryByCapital(capitals); // Obtém o país
+  console.log('pais', myCurrentCountry[0].name.common);
+  console.log('capital', myCurrentCountry[0].capital[0]);
+
+  buildPage(myCurrentCountry); // Constrói a página
+  front(myCurrentCountry); // Mostra a primeira bandeira
 }
 
 let progress = 0; // Variável para armazenar o progresso do jogo
