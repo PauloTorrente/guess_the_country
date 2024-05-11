@@ -26,7 +26,7 @@ function buildPage() {
   myInput.addEventListener('keypress', function(event) {
     if (event.key === 'Enter') {
       event.preventDefault(); // Evita o comportamento padrão do Enter
-      document.getElementById('myBtn').click(); // Aciona o botão com id 'myBtn'
+      guessFlag('all', 0, capitals.length); // Chama a função guessFlag ao pressionar Enter
     }
   });
 
@@ -96,22 +96,16 @@ async function guessFlag(countries, min, max) {
   const myCapital = myCurrentCountry[0].capital; // Obtém a capital do país
 
   const myInput = document.getElementById('myInner'); // Obtém o input
-  const myMain = document.getElementById('myMain'); // Obtém o main
 
-  // Adiciona um evento de tecla pressionada ao input
-  myInput.addEventListener('keyup', function(event) {
-    if (event.key === 'Enter') { // Se a tecla pressionada for Enter
-      const inputValue = myInput.value.trim().toLowerCase(); // Obtém o valor do input em minúsculas
-      if (inputValue === myCapital.toLowerCase()) { // Se o valor for igual à capital em minúsculas
-        updateScoreAndProgress(true); // Atualiza a pontuação e o progresso como corretos
-        alert('Você acertou!'); // Exibe uma mensagem de acerto
-      } else {
-        updateScoreAndProgress(false); // Atualiza a pontuação e o progresso como incorretos
-        alert('Tente novamente'); // Exibe uma mensagem de erro
-      }
-      myInput.value = ''; // Limpa o input
-    }
-  });
+  // Se o valor do input for igual à capital em minúsculas
+  if (myInput.value.trim().toLowerCase() === myCapital.toLowerCase()) {
+    updateScoreAndProgress(true); // Atualiza a pontuação e o progresso como corretos
+    alert('Você acertou!'); // Exibe uma mensagem de acerto
+  } else {
+    updateScoreAndProgress(false); // Atualiza a pontuação e o progresso como incorretos
+    alert('Tente novamente'); // Exibe uma mensagem de erro
+  }
+  myInput.value = ''; // Limpa o input
 }
 
 // Função para atualizar a pontuação e o progresso
@@ -120,8 +114,7 @@ function updateScoreAndProgress(isCorrect) {
   resultSpan.classList.add('result'); // Adiciona a classe 'result' ao span
   if (isCorrect) { // Se a resposta for correta
     resultSpan.classList.add('correct'); // Adiciona a classe 'correct' ao span
-    resultSpan.innerText = '✓ Correcto!'; // Define o texto do span como '
-    // Se a resposta for correta, define o texto do span como '✓ Correcto!'
+    resultSpan.innerText = '✓ Correcto!'; // Define o texto do span como '✓ Correcto!'
   } else {
     resultSpan.classList.add('incorrect'); // Adiciona a classe 'incorrect' ao span
     resultSpan.innerText = 'X Incorrecto!'; // Define o texto do span como 'X Incorrecto!'
@@ -147,7 +140,6 @@ async function runPage() {
   buildPage(); // Constrói a página
   const capitals = await getAllCapitals('all'); // Obtém todas as capitais
   await front('all', 0, capitals.length); // Mostra a primeira bandeira
-  await guessFlag('all', 0, capitals.length); // Inicia o jogo de adivinhação
 }
 
 let progress = 0; // Variável para armazenar o progresso do jogo
