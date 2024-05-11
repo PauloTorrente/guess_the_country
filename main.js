@@ -1,118 +1,156 @@
+// Função para construir a página
 function buildPage() {
-  const root = document.getElementById('root');
+  const root = document.getElementById('root'); // Obtém a raiz do documento
 
-  const myHeader = document.createElement('header');
-  myHeader.id = "myHeader";
+  const myHeader = document.createElement('header'); // Cria um elemento header
+  myHeader.id = 'myHeader'; // Define o id do header
 
-  const myH1 = document.createElement('h1');
-  myH1.id = "myH1";
-  myH1.innerText = 'guessFlag';
-  myHeader.appendChild(myH1);
+  const myH1 = document.createElement('h1'); // Cria um elemento h1
+  myH1.id = 'myH1'; // Define o id do h1
+  myH1.innerText = 'Flag'; // Define o texto do h1
+  myHeader.appendChild(myH1); // Adiciona o h1 ao header
 
-  const myMain = document.createElement('main');
-  myMain.id = "myMain";
+  const myMain = document.createElement('main'); // Cria um elemento main
+  myMain.id = 'myMain'; // Define o id do main
 
-  const myFlag = document.createElement('img');
-  myFlag.id = "myFlag";
-  myMain.appendChild(myFlag);
+  const myFlag = document.createElement('img'); // Cria uma imagem
+  myFlag.id = 'myFlag'; // Define o id da imagem
+  myMain.appendChild(myFlag); // Adiciona a imagem ao main
 
-  const myInner = document.createElement('input');
-  myInner.id = "myInner";
-  myMain.appendChild(myInner);
+  const myInput = document.createElement('input'); // Cria um input
+  myInput.id = 'myInner'; // Define o id do input
+  myInput.placeholder = 'Guess the capital...'; // Define o texto de placeholder do input
+  myMain.appendChild(myInput); // Adiciona o input ao main
 
-  const myClueButton = document.createElement('div');
-  myClueButton.id = "myClueButton";
-  myClueButton.setAttribute('class', 'button');
-  myClueButton.innerText = 'Give me a clue';
-  myMain.appendChild(myClueButton);
+  // Adiciona um evento para acionar o botão quando a tecla Enter for pressionada
+  myInput.addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+      event.preventDefault(); // Evita o comportamento padrão do Enter
+      document.getElementById('myBtn').click(); // Aciona o botão com id 'myBtn'
+    }
+  });
 
-  const myNextButton = document.createElement('div');
-  myNextButton.id = "myNextButton";
-  myNextButton.setAttribute('class', 'button');
-  myNextButton.innerText = 'Next Flag';
-  myMain.appendChild(myNextButton);
+  const myClueButton = document.createElement('button'); // Cria um botão
+  myClueButton.id = 'myClueButton'; // Define o id do botão
+  myClueButton.className = 'button'; // Define a classe do botão
+  myClueButton.innerText = 'Give me a clue'; // Define o texto do botão
+  myMain.appendChild(myClueButton); // Adiciona o botão ao main
 
-  root.appendChild(myHeader);
-  root.appendChild(myMain);
+  const myNextButton = document.createElement('button'); // Cria um botão
+  myNextButton.id = 'myNextButton'; // Define o id do botão
+  myNextButton.className = 'button'; // Define a classe do botão
+  myNextButton.innerText = 'Next Flag'; // Define o texto do botão
+  myMain.appendChild(myNextButton); // Adiciona o botão ao main
+
+  root.appendChild(myHeader); // Adiciona o header à raiz
+  root.appendChild(myMain); // Adiciona o main à raiz
 }
 
+// Função assíncrona para obter todas as capitais
 async function getAllCapitals(whatIWant) {
-  const url = https://restcountries.com/v3.1/${whatIWant};
-  const responseAsPromise = await fetch(url);
-  const data = await responseAsPromise.json();
+  const url = `https://restcountries.com/v3.1/${whatIWant}`; // URL da API
+  const response = await fetch(url); // Faz uma requisição à API
+  const data = await response.json(); // Converte a resposta para JSON
 
-  function mapCallback(item) {
-    return item.capital;
+  if (!Array.isArray(data)) {
+    throw new Error('Dados recebidos não são um array'); // Lança um erro se os dados não forem um array
   }
-  const myCapitalsArray = (data.map(mapCallback).flat());
-  return myCapitalsArray;
+
+  // Mapeia os dados para extrair as capitais
+  const myCapitalsArray = data.flatMap(item => item.capital);
+  return myCapitalsArray; // Retorna as capitais
 }
 
+// Função para gerar um número aleatório dentro de um intervalo
 function getRandomNumber(min, max) {
-  const randomNumber = Math.floor(Math.random() * (max - min));
-  return randomNumber;
+  return Math.floor(Math.random() * (max - min)) + min;
 }
 
+// Função assíncrona para obter o país por sua capital
 async function getCountryByCapital(countries, min, max) {
-  const myRandomArray = await getAllCapitals(countries);
-  const myRandomNumber = getRandomNumber(min, max);
+  const myCapitalsArray = await getAllCapitals(countries); // Obtém todas as capitais
+  const myRandomNumber = getRandomNumber(min, max); // Gera um número aleatório
 
-  console.log('el array con todos los paises: ', myRandomArray);
-  console.log('mi numero random: ', myRandomNumber);
+  // URL para obter o país por sua capital
+  const url = `https://restcountries.com/v3.1/capital/${myCapitalsArray[myRandomNumber]}`;
+  const response = await fetch(url); // Faz uma requisição à API
+  const myCountry = await response.json(); // Converte a resposta para JSON
 
-  const url = https://restcountries.com/v3.1/capital/${myRandomArray[myRandomNumber]};
-  const myCountryResponse = await fetch(url);
-  const myCountry = await myCountryResponse.json();
+  if (!Array.isArray(myCountry)) {
+    throw new Error('Resposta da API não é um array'); // Lança um erro se a resposta não for um array
+  }
 
-  console.log('myCountry', myCountry);
-  return myCountry;
+  return myCountry; // Retorna o país
 }
 
+// Função assíncrona para mostrar a bandeira de um país na página
 async function front(countries, min, max) {
-  const myCurrentCountrie = await getCountryByCapital(countries, min, max);
-  const myImage = document.getElementById('myFlag');
-  myImage.setAttribute('src', myCurrentCountrie[0].flags.png);
+  const myCurrentCountry = await getCountryByCapital(countries, min, max); // Obtém o país
+  const myImage = document.getElementById('myFlag'); // Obtém a imagem
+  myImage.setAttribute('src', myCurrentCountry[0].flags.png); // Define a fonte da imagem
 }
 
+// Função assíncrona para adivinhar a capital de um país
 async function guessFlag(countries, min, max) {
-  const myCurrentCountrie = await getCountryByCapital(countries, min, max);
+  const myCurrentCountry = await getCountryByCapital(countries, min, max); // Obtém o país atual
+  const myCapital = myCurrentCountry[0].capital; // Obtém a capital do país
 
-  const myCapital = myCurrentCountrie.capital;
-  const fitstClue = myCurrentCountrie.population;
-  const secondClue = myCurrentCountrie.region;
-  const thirdClue = myCurrentCountrie.languages;
+  const myInput = document.getElementById('myInner'); // Obtém o input
+  const myMain = document.getElementById('myMain'); // Obtém o main
 
-  const myInput = document.getElementById('myInner');
-
-  myInput.addEventListener("enter", function () {
-    // Cuando el evento de cambio se dispare, este código se ejecutará
-    const inputValue = myInput.value;
-    if (inputValue === myCapital) {
-      alert('Has ganado');
-    } else {
-      alert('Sigue intentandolo');
+  // Adiciona um evento de tecla pressionada ao input
+  myInput.addEventListener('keyup', function(event) {
+    if (event.key === 'Enter') { // Se a tecla pressionada for Enter
+      const inputValue = myInput.value.trim().toLowerCase(); // Obtém o valor do input em minúsculas
+      if (inputValue === myCapital.toLowerCase()) { // Se o valor for igual à capital em minúsculas
+        updateScoreAndProgress(true); // Atualiza a pontuação e o progresso como corretos
+        alert('Você acertou!'); // Exibe uma mensagem de acerto
+      } else {
+        updateScoreAndProgress(false); // Atualiza a pontuação e o progresso como incorretos
+        alert('Tente novamente'); // Exibe uma mensagem de erro
+      }
+      myInput.value = ''; // Limpa o input
     }
   });
 }
 
+// Função para atualizar a pontuação e o progresso
+function updateScoreAndProgress(isCorrect) {
+  const resultSpan = document.createElement('span'); // Cria um elemento span
+  resultSpan.classList.add('result'); // Adiciona a classe 'result' ao span
+  if (isCorrect) { // Se a resposta for correta
+    resultSpan.classList.add('correct'); // Adiciona a classe 'correct' ao span
+    resultSpan.innerText = '✓ Correcto!'; // Define o texto do span como '
+    // Se a resposta for correta, define o texto do span como '✓ Correcto!'
+  } else {
+    resultSpan.classList.add('incorrect'); // Adiciona a classe 'incorrect' ao span
+    resultSpan.innerText = 'X Incorrecto!'; // Define o texto do span como 'X Incorrecto!'
+  }
+  document.getElementById('myMain').appendChild(resultSpan); // Adiciona o span ao main
 
+  // Atualiza a pontuação e o progresso
+  progress++; // Incrementa o progresso
+  if (isCorrect) { // Se a resposta for correta
+    score++; // Incrementa a pontuação
+  }
+}
 
+// Função assíncrona para mostrar a próxima bandeira
 async function nextFlag(countries, min, max) {
-  const button = document.getElementById
-  //por aqui ir escribiendo cosas de eventos y tal
-
-  const myCurrentCountrie = await getCountryByCapital(countries, min, max);
-  const myImage = document.getElementById('myFlag');
-  myImage.setAttribute('src', myCurrentCountrie[0].flags.png);
+  const myCurrentCountry = await getCountryByCapital(countries, min, max); // Obtém o país atual
+  const myImage = document.getElementById('myFlag'); // Obtém a imagem
+  myImage.setAttribute('src', myCurrentCountry[0].flags.png); // Define a fonte da imagem
 }
 
-
-
+// Função principal assíncrona para executar a página
 async function runPage() {
-  buildPage();
-  const capitals = await getAllCapitals('all');
-
-  await front('all', 0, capitals.length);
+  buildPage(); // Constrói a página
+  const capitals = await getAllCapitals('all'); // Obtém todas as capitais
+  await front('all', 0, capitals.length); // Mostra a primeira bandeira
+  await guessFlag('all', 0, capitals.length); // Inicia o jogo de adivinhação
 }
 
-runPage();
+let progress = 0; // Variável para armazenar o progresso do jogo
+let score = 0; // Variável para armazenar a pontuação do jogo
+
+runPage(); // Executa a página
